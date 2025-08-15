@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; img-src 'self' data:"
+    />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <link rel="stylesheet" href="./assets/main.css" />
+    <title>Hello from Electron renderer!</title>
+  </head>
+  <body>
+    <div class="base-layout">
+      <div id="header">
+        <h1>Welcome To Script Runner</h1>
+      </div>
+      <div id="left-panel">somthing here</div>
+      <div id="right-panel">
+        <input type="file" name="file-opener" id="file-opener" multiple />
+        <div class="script-list-container">
+          <ul id="script-list"></ul>
+        </div>
+      </div>
+      <div id="terminal" class="terminal-container"></div>
+    </div>
+  </body>
+  <script type="module" src="./src/renderer.js"></script>
+</html>
