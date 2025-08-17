@@ -39,7 +39,6 @@ async function runScript(event) {
  */
 async function addScripts(event) {
   const files = event.target.files
-  console.log(files)
   await window.scriptFunctionalities.readScriptsPath(files)
   await displayScriptList()
 }
@@ -51,10 +50,10 @@ async function addScripts(event) {
  * @todo add error handeling
  */
 async function displayScriptList() {
-  scriptList.replaceChildren()
   const { data, success } = await window.scriptFunctionalities.getAllScripts()
   const scripts = data
-  if (success) {
+  if (scripts && success) {
+    scriptList.replaceChildren()
     for (const script of scripts) {
       createScriptListItem(script)
     }

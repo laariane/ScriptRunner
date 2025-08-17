@@ -5,7 +5,7 @@
  * TODO think about the fact that the user could want to add arguments to its script
  * TODO after displaying the data , we need to figuer out a way to implement a drag and drop function to swap order and shit --DOING
  * TODO add state display of the script or the group script when its running ,
- * TODO add the stop or edit button next to the script
+ * TODO add the stop or edit button next to the script use the child.on("close")
  */
 
 import path from 'node:path'
@@ -108,7 +108,7 @@ async function runScript(event, scriptId) {
   const scriptNameList = scriptName.split('.')
   const exentsion = scriptNameList[scriptNameList.length - 1]
   if (exentsion === 'sh' || exentsion === 'bash') {
-    const child = spawn('sh', [`${script.path}`])
+    const child = spawn(`sh  ${script.path} && sh ${script.path} `, { shell: true })
     sendToRender(
       true,
       `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
@@ -120,6 +120,9 @@ async function runScript(event, scriptId) {
     child.stderr.on('data', (chunk) => {
       console.log(chunk.toString())
       sendToRender(true, chunk.toString(), 'scriptResultStreaming')
+    })
+    child.on('close', (code) => {
+      console.log(code)
     })
   }
 }
