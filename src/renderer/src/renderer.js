@@ -1,5 +1,7 @@
 import Convert from 'ansi-to-html'
-import playButtonSvg from '../assets/svgs/playsolidfullgreen.svg'
+import playButtonSvg from '../assets/svgs/play-solid-full-green.svg'
+import editButtonSvg from '../assets/svgs/pen-to-square-solid-full.svg'
+import deleteButtonSvg from '../assets/svgs/trash-solid-full.svg'
 
 window.addEventListener('DOMContentLoaded', displayScriptList)
 window.scriptFunctionalities.streamScriptResult()
@@ -9,19 +11,21 @@ window.addEventListener('script-result', readResultsToTerminal)
  */
 const convert = new Convert()
 const fileOpener = document.getElementById('file-opener')
+const fileOpenerButton = document.getElementById('fileOpenerButton')
 const scriptList = document.getElementById('script-list')
 const terminal = document.getElementById('terminal')
 /***
  * event lisetners
  */
 fileOpener.addEventListener('change', addScripts)
+fileOpenerButton.addEventListener('click', openFileExplorer)
 
 /**
  *  @namespace RendererEventHandlers
  */
 /**
  * this function is responsible for sending the id to the main process to get processed :]
- * @param { HTMLElementEventMap }   event html event
+ * @param {Event}    event html event
  * @returns  {void}
  *
  * @memberof RendererEventHandlers
@@ -30,18 +34,26 @@ async function runScript(event) {
   const scriptId = event.currentTarget.parentNode.scriptId
   window.scriptFunctionalities.runScript(scriptId)
 }
+
+async function editScript() {}
+
+async function deleteScript(event) {
+  const scriptId = event.currentTarget.parentNode.scriptId
+  console.log(scriptId)
+  window.scriptFunctionalities.deleteScript(scriptId)
+  displayScriptList()
+}
 /**
  * this function is responsible for sending the scripts to get stored  and trigger a re display of the script list
- * @param { HTMLElementEventMap }   event html event
+ * @param { Event }   event html event
  * @returns  {void}
  *
  * @memberof RendererEventHandlers
  */
 async function addScripts(event) {
   const files = event.target.files
-  console.log(files)
   await window.scriptFunctionalities.readScriptsPath(files)
-  await displayScriptList()
+  displayScriptList()
 }
 /**
  * this function is responsible for displaying the list of scripts
@@ -51,10 +63,10 @@ async function addScripts(event) {
  * @todo add error handeling
  */
 async function displayScriptList() {
-  scriptList.replaceChildren()
   const { data, success } = await window.scriptFunctionalities.getAllScripts()
   const scripts = data
-  if (success) {
+  if (scripts && success) {
+    scriptList.replaceChildren()
     for (const script of scripts) {
       createScriptListItem(script)
     }
@@ -77,22 +89,43 @@ function createScriptListItem(script) {
   listItem.setAttribute('class', 'script-item')
   listItem.scriptId = script.dataValues.id
   listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
-  const scriptButtonRun = document.createElement('button')
-  scriptButtonRun.setAttribute('class', 'button-normal')
-  let imgPlayButton = document.createElement('img')
-  imgPlayButton.innerText = "<img width='10px' alt='play button'></img>"
-  // imgPlayButton.style.content = `url("${playButtonSvg}")`
-  imgPlayButton.src = playButtonSvg
-  scriptButtonRun.appendChild(imgPlayButton)
-  // scriptButtonRun.innerHTML = `<img class ='play-button-img' src='${url(playButtonSvg)}' width="20px" alt="play button">`
-  scriptButtonRun.addEventListener('click', runScript)
-  listItem.appendChild(scriptButtonRun)
+  createListItemButtons(listItem)
   scriptList.appendChild(listItem)
 }
 
 function readResultsToTerminal(event) {
-  // const scriptResult = ansi_up.ansi_to_html(event.detail.data)
   const paragraph = document.createElement('p')
   paragraph.innerHTML = convert.toHtml(event.detail.data) + '\n'
   terminal.appendChild(paragraph)
+}
+/**
+ *
+ * @param {HTMLElement} parentNode
+ */
+function createListItemButtons(parentNode) {
+  const divContainter = document.createElement('div')
+  divContainter.setAttribute('class', 'container-script-button')
+  const buttons = [playButtonSvg, editButtonSvg, deleteButtonSvg]
+  for (const button of buttons) {
+    const scriptButton = document.createElement('button')
+    scriptButton.setAttribute('class', 'button-normal')
+    scriptButton.style.marginLeft = '10px'
+    let imgPlayButton = document.createElement('img')
+    imgPlayButton.innerText = "<img width='10px' alt='play button'></img>"
+    imgPlayButton.src = button
+    scriptButton.appendChild(imgPlayButton)
+    if (button === playButtonSvg) {
+      scriptButton.addEventListener('click', runScript)
+    } else if (button === editButtonSvg) {
+      scriptButton.addEventListener('click', editScript)
+    } else if (button === deleteButtonSvg) {
+      scriptButton.addEventListener('click', deleteScript)
+    }
+    parentNode.appendChild(scriptButton)
+  }
+}
+/**
+ */
+function openFileExplorer() {
+  fileOpener.click()
 }

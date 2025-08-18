@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron')
 contextBridge.exposeInMainWorld('scriptFunctionalities', {
   readScriptsPath: (files) => readScriptsPath(files),
   runScript: (scriptId) => runScript(scriptId),
+  deleteScript: (scriptId) => deleteScript(scriptId),
   getAllScripts: () => ipcRenderer.invoke('getAllScripts'),
   streamScriptResult: () => {
     ipcRenderer.on('scriptResultStreaming', (event, chunk) => {
@@ -31,4 +32,7 @@ function readScriptsPath(files) {
 
 async function runScript(scriptId) {
   await ipcRenderer.invoke('runScript', scriptId)
+}
+async function deleteScript(scriptId) {
+  await ipcRenderer.invoke('deleteScript', scriptId)
 }

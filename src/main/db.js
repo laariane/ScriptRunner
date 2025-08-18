@@ -54,4 +54,4 @@ async function addDummyScript() {
     }
   ).then((result) => console.log(result))
 }
-addDummyScript()
+// addDummyScript()
