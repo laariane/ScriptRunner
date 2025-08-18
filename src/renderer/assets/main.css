@@ -130,10 +130,10 @@ body {
   overflow: auto;
 }
 
-.container-script-button{
+.container-script-button {
   display: flex;
   gap: 5px;
 }
-#file-opener{
+#file-opener {
   display: none;
 }
