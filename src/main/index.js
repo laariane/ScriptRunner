@@ -1,11 +1,10 @@
 /***
- * TODO need to empliment a way to delete a group or a script from the application
- * TODO need to implement a reserch feature in the application for scripts (make it reusable because we will need it in a lot of places)
- * TODO add a way to export the scripts.
- * TODO think about the fact that the user could want to add arguments to its script
- * TODO after displaying the data , we need to figuer out a way to implement a drag and drop function to swap order and shit --DOING
- * TODO add state display of the script or the group script when its running ,
- * TODO add the stop or edit button next to the script use the child.on("close")
+  i need an add button for the script group creation
+  i need and add button for the script group scripts adding
+  i need to be able to delete the scripts of a group or the group itself
+  i need to be able to order the scripts in a script group
+  i need to be able to run the script group
+  i need to keep the state in the application
  */
 
 import path from 'node:path'
@@ -47,6 +46,7 @@ app.on('window-all-closed', () => {
 ipcMain.handle('runScript', runScript)
 ipcMain.handle('addScripts', addScripts)
 ipcMain.handle('getAllScripts', getAllScripts)
+ipcMain.handle('deleteScript', deleteScript)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -124,6 +124,20 @@ async function runScript(event, scriptId) {
     child.on('close', (code) => {
       console.log(code)
     })
+  }
+}
+
+async function deleteScript(event, scriptId) {
+  console.log(scriptId)
+  try {
+    const result = await Script.destroy({
+      where: {
+        id: scriptId
+      }
+    })
+    sendToRender(true, result.toString(), 'scriptResultStreaming')
+  } catch (error) {
+    sendToRender(true, error.toString(), 'scriptResultStreaming')
   }
 }
 /**
