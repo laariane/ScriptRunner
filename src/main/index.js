@@ -114,15 +114,19 @@ async function runScript(event, scriptId) {
       `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
       'scriptResultStreaming'
     )
+    process.stdin.pipe(child.stdin)
     child.stdout.on('data', (chunk) => {
       sendToRender(true, chunk.toString(), 'scriptResultStreaming')
     })
     child.stderr.on('data', (chunk) => {
-      console.log(chunk.toString())
       sendToRender(true, chunk.toString(), 'scriptResultStreaming')
     })
     child.on('close', (code) => {
-      console.log(code)
+      sendToRender(
+        true,
+        `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`,
+        'scriptResultStreaming'
+      )
     })
   }
 }
