@@ -17,16 +17,19 @@
       <div id="header">
         <h1>Welcome To Script Runner</h1>
       </div>
-      <div id="left-panel">somthing here</div>
+      <div id="left-panel">
+        <button class="button-normal" id="group-script-creation-button">
+          <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
+        </button>
+        <input  type="text" name="group-script-name-input" id="group-script-name-input">
+        <div class="script-list-container">
+          <ul id="group-script-list"></ul>
+        </div>
+      </div>
       <div id="right-panel">
-        <label for="file-opener"
-          ><button class="button-normal" id="fileOpenerButton">
-            <img
-              width="35px"
-              src="./assets/svgs/plus-solid-full.svg"
-              alt="adding file icon"
-            /></button
-        ></label>
+        <button class="button-normal" id="file-opener-button">
+          <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
+        </button>
         <input type="file" name="file-opener" id="file-opener" multiple />
         <div class="script-list-container">
           <ul id="script-list"></ul>

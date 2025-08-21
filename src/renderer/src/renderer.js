@@ -3,7 +3,7 @@ import playButtonSvg from '../assets/svgs/play-solid-full-green.svg'
 import editButtonSvg from '../assets/svgs/pen-to-square-solid-full.svg'
 import deleteButtonSvg from '../assets/svgs/trash-solid-full.svg'
 
-window.addEventListener('DOMContentLoaded', displayScriptList)
+window.addEventListener('DOMContentLoaded', init)
 window.scriptFunctionalities.streamScriptResult()
 window.addEventListener('script-result', readResultsToTerminal)
 /**
@@ -11,14 +11,19 @@ window.addEventListener('script-result', readResultsToTerminal)
  */
 const convert = new Convert()
 const fileOpener = document.getElementById('file-opener')
-const fileOpenerButton = document.getElementById('fileOpenerButton')
+const fileOpenerButton = document.getElementById('file-opener-button')
 const scriptList = document.getElementById('script-list')
+const groupScriptList = document.getElementById('group-script-list')
 const terminal = document.getElementById('terminal')
+const groupScriptCreationButton = document.getElementById('group-script-creation-button')
+const groupScriptNameInput = document.getElementById('group-script-name-input')
 /***
  * event lisetners
  */
 fileOpener.addEventListener('change', addScripts)
 fileOpenerButton.addEventListener('click', openFileExplorer)
+groupScriptCreationButton.addEventListener('click', createGroupScript)
+groupScriptNameInput.addEventListener('keyup', groupScriptNameInputHandler)
 
 /**
  *  @namespace RendererEventHandlers
@@ -72,6 +77,29 @@ async function displayScriptList() {
     }
   }
 }
+async function displayGroupScriptList() {
+  const { data, success } = await window.scriptFunctionalities.getAllGroupScripts()
+  const groupScripts = data
+  if (groupScripts && success) {
+    groupScriptList.replaceChildren()
+    for (const group of groupScripts) {
+      createGrouScriptListItem(group)
+    }
+  }
+}
+
+async function createGroupScript() {
+  groupScriptNameInput.style.display = 'block'
+  groupScriptNameInput.focus()
+}
+async function groupScriptNameInputHandler(event) {
+  if (event.key === 'Enter') {
+    const groupScriptName = event.target.value
+    await window.scriptFunctionalities.createGroupScript(groupScriptName)
+    groupScriptNameInput.style.display = 'none'
+    displayGroupScriptList()
+  }
+}
 
 /**
  @namespace RendererUtils
@@ -91,6 +119,15 @@ function createScriptListItem(script) {
   listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
   createListItemButtons(listItem)
   scriptList.appendChild(listItem)
+}
+
+function createGrouScriptListItem(groupScript) {
+  let listItem = document.createElement('li')
+  listItem.setAttribute('class', 'script-item')
+  listItem.groupScriptId = groupScript.dataValues.id
+  listItem.innerHTML = `<span class='group-script-name'>${groupScript.dataValues.name}</span>`
+  createListItemButtons(listItem)
+  groupScriptList.appendChild(listItem)
 }
 
 function readResultsToTerminal(event) {
@@ -128,4 +165,9 @@ function createListItemButtons(parentNode) {
  */
 function openFileExplorer() {
   fileOpener.click()
+}
+
+function init() {
+  displayScriptList()
+  displayGroupScriptList()
 }

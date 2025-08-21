@@ -4,20 +4,24 @@ contextBridge.exposeInMainWorld('scriptFunctionalities', {
   readScriptsPath: (files) => readScriptsPath(files),
   runScript: (scriptId) => runScript(scriptId),
   deleteScript: (scriptId) => deleteScript(scriptId),
-  getAllScripts: () => ipcRenderer.invoke('getAllScripts'),
+  getAllScripts: async () => {
+    return await ipcRenderer.invoke('getAllScripts')
+  },
+  getAllGroupScripts: () => getAllGroupScripts(),
   streamScriptResult: () => {
     ipcRenderer.on('scriptResultStreaming', (event, chunk) => {
       const customevent = new CustomEvent('script-result', { detail: chunk })
       window.dispatchEvent(customevent)
     })
-  }
+  },
+  createGroupScript: (groupScriptName) => createGroupScript(groupScriptName)
 })
 
 /****
  * handlers
  */
 
-function readScriptsPath(files) {
+async function readScriptsPath(files) {
   let result = {
     names: [],
     paths: []
@@ -27,12 +31,19 @@ function readScriptsPath(files) {
     result.paths.unshift(path)
     result.names.unshift(files[file].name)
   }
-  ipcRenderer.invoke('addScripts', result)
+  return await ipcRenderer.invoke('addScripts', result)
 }
 
 async function runScript(scriptId) {
-  await ipcRenderer.invoke('runScript', scriptId)
+  return await ipcRenderer.invoke('runScript', scriptId)
 }
 async function deleteScript(scriptId) {
-  await ipcRenderer.invoke('deleteScript', scriptId)
+  return await ipcRenderer.invoke('deleteScript', scriptId)
+}
+
+async function createGroupScript(groupScriptName) {
+  await ipcRenderer.invoke('createGroupScript', groupScriptName)
+}
+async function getAllGroupScripts() {
+  return ipcRenderer.invoke('getAllGroupScripts')
 }
