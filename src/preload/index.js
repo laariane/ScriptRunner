@@ -14,7 +14,8 @@ contextBridge.exposeInMainWorld('scriptFunctionalities', {
       window.dispatchEvent(customevent)
     })
   },
-  createGroupScript: (groupScriptName) => createGroupScript(groupScriptName)
+  createGroupScript: (groupScriptName) => createGroupScript(groupScriptName),
+  getGroupScriptElements: (groupScriptId) => getGroupScriptElements(groupScriptId)
 })
 
 /****
@@ -46,4 +47,7 @@ async function createGroupScript(groupScriptName) {
 }
 async function getAllGroupScripts() {
   return ipcRenderer.invoke('getAllGroupScripts')
+}
+async function getGroupScriptElements(groupScriptId) {
+  return await ipcRenderer.invoke('getGroupScriptElements', groupScriptId)
 }

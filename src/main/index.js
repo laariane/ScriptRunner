@@ -11,7 +11,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { app, BrowserWindow } from 'electron/main'
 import { ipcMain } from 'electron'
-import { Script, ScriptGroup } from './db'
+import { Script, ScriptGroup, sequelize } from './db'
 const createWindow = () => {
   global.win = new BrowserWindow({
     width: 1200,
@@ -54,6 +54,7 @@ ipcMain.handle('getAllScripts', getAllScripts)
 ipcMain.handle('getAllGroupScripts', getAllGroupScripts)
 ipcMain.handle('deleteScript', deleteScript)
 ipcMain.handle('createGroupScript', createGroupScript)
+ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -75,7 +76,6 @@ async function addScripts(event, arrayOfScripts) {
   for (let i = 0; i < scriptNames.length; i++) {
     querryArray.unshift({ name: scriptNames[i], path: scriptPaths[i] })
   }
-  console.log(querryArray)
   try {
     const scripts = await Script.bulkCreate(querryArray)
     return sendToRender(true, scripts)
@@ -94,7 +94,6 @@ async function addScripts(event, arrayOfScripts) {
 async function getAllScripts() {
   try {
     const scripts = await Script.findAll()
-    console.log(scripts)
     return sendToRender(true, scripts)
   } catch (error) {
     return sendToRender(false, error.errors[0].message)
@@ -103,7 +102,6 @@ async function getAllScripts() {
 async function getAllGroupScripts() {
   try {
     const groupScripts = await ScriptGroup.findAll()
-    console.log(groupScripts)
     return sendToRender(true, groupScripts)
   } catch (error) {
     return sendToRender(false, error.errors[0].message)
@@ -149,7 +147,6 @@ async function runScript(event, scriptId) {
 }
 
 async function deleteScript(event, scriptId) {
-  console.log(scriptId)
   try {
     const result = await Script.destroy({
       where: {
@@ -163,12 +160,28 @@ async function deleteScript(event, scriptId) {
 }
 async function createGroupScript(event, name) {
   if (name) {
-    console.log(name)
     const result = await ScriptGroup.create({
       name: name
     })
-    console.log(result)
     return result
+  }
+}
+async function getGroupScriptElements(event, scriptGroupId) {
+  if (scriptGroupId) {
+    try {
+      const result = await sequelize.query(`
+    SELECT  script_order, scripts.name, scripts.id as 'scriptId', sg.name as 'groupScritName'
+    FROM scripts
+    JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
+    JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
+    WHERE sg.id=${scriptGroupId}
+    ORDER BY script_order ASC
+  ;`)
+      console.log(result[0])
+      return sendToRender(true, result[0])
+    } catch (error) {
+      return sendToRender(false, error)
+    }
   }
 }
 /**

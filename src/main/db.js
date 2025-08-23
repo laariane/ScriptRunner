@@ -4,7 +4,7 @@ import path from 'node:path'
 export const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: path.join(__dirname, '..', 'script.db'),
-  logging: true
+  logging: false
 })
 export class Script extends Model {}
 Script.init(
@@ -22,7 +22,7 @@ ScriptGroup.init(
   },
   { sequelize, modelName: 'scriptGroup' }
 )
-class ScriptGroup_Script extends Model {}
+export class ScriptGroup_Script extends Model {}
 ScriptGroup_Script.init(
   {
     script_order: DataTypes.INTEGER

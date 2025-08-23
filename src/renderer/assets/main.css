@@ -136,20 +136,24 @@ body {
   display: none;
 }
 
-#group-script-name-input{
+#group-script-name-input {
   display: none;
+  width: 100%;
 }
-#group-script-list{
+
+#group-script-list {
   height: 100%;
   margin-top: 10px;
   margin-left: 5px;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  overflow: auto;
 }
-#group-script-list > .script-item > span{
+
+#group-script-list>.script-item>span {
   margin-right: auto;
 }
-
-
-
+.button-normal > img{
+  min-width: 10px;
+}

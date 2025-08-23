@@ -2,6 +2,7 @@ import Convert from 'ansi-to-html'
 import playButtonSvg from '../assets/svgs/play-solid-full-green.svg'
 import editButtonSvg from '../assets/svgs/pen-to-square-solid-full.svg'
 import deleteButtonSvg from '../assets/svgs/trash-solid-full.svg'
+import chevronRightSvg from '../assets/svgs/chevron-right.svg'
 
 window.addEventListener('DOMContentLoaded', init)
 window.scriptFunctionalities.streamScriptResult()
@@ -17,6 +18,26 @@ const groupScriptList = document.getElementById('group-script-list')
 const terminal = document.getElementById('terminal')
 const groupScriptCreationButton = document.getElementById('group-script-creation-button')
 const groupScriptNameInput = document.getElementById('group-script-name-input')
+const scriptItemsButtons = [
+  {
+    img: playButtonSvg,
+    handler: runScript
+  },
+  {
+    img: editButtonSvg,
+    handler: editScript
+  },
+  {
+    img: deleteButtonSvg,
+    handler: deleteScript
+  }
+]
+const groupScriptButons = [
+  {
+    img: chevronRightSvg,
+    handler: displayGroupScript
+  }
+]
 /***
  * event lisetners
  */
@@ -24,6 +45,9 @@ fileOpener.addEventListener('change', addScripts)
 fileOpenerButton.addEventListener('click', openFileExplorer)
 groupScriptCreationButton.addEventListener('click', createGroupScript)
 groupScriptNameInput.addEventListener('keyup', groupScriptNameInputHandler)
+groupScriptNameInput.addEventListener('blur', () => {
+  groupScriptNameInput.style.display = 'none'
+})
 
 /**
  *  @namespace RendererEventHandlers
@@ -39,7 +63,7 @@ async function runScript(event) {
   const scriptId = event.currentTarget.parentNode.scriptId
   window.scriptFunctionalities.runScript(scriptId)
 }
-
+// todo need to implement this , need to check if the user has setup an application to open his scripts or not
 async function editScript() {}
 
 async function deleteScript(event) {
@@ -47,6 +71,11 @@ async function deleteScript(event) {
   console.log(scriptId)
   window.scriptFunctionalities.deleteScript(scriptId)
   displayScriptList()
+}
+async function displayGroupScript(event) {
+  const groupScriptId = event.currentTarget.parentNode.groupScriptId
+  const result = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
+  //todo diplay that shit into the screen and also display the groupscript name in the title
 }
 /**
  * this function is responsible for sending the scripts to get stored  and trigger a re display of the script list
@@ -83,7 +112,7 @@ async function displayGroupScriptList() {
   if (groupScripts && success) {
     groupScriptList.replaceChildren()
     for (const group of groupScripts) {
-      createGrouScriptListItem(group)
+      createGroupScriptListItem(group)
     }
   }
 }
@@ -117,16 +146,17 @@ function createScriptListItem(script) {
   listItem.setAttribute('class', 'script-item')
   listItem.scriptId = script.dataValues.id
   listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
-  createListItemButtons(listItem)
+  createListItemButtons(listItem, scriptItemsButtons, 'scriptItem')
   scriptList.appendChild(listItem)
 }
 
-function createGrouScriptListItem(groupScript) {
+function createGroupScriptListItem(groupScript) {
   let listItem = document.createElement('li')
   listItem.setAttribute('class', 'script-item')
   listItem.groupScriptId = groupScript.dataValues.id
   listItem.innerHTML = `<span class='group-script-name'>${groupScript.dataValues.name}</span>`
-  createListItemButtons(listItem)
+  createListItemButtons(listItem, groupScriptButons)
+  // need to implement the grouscriptlistitembuttons
   groupScriptList.appendChild(listItem)
 }
 
@@ -139,28 +169,20 @@ function readResultsToTerminal(event) {
  *
  * @param {HTMLElement} parentNode
  */
-function createListItemButtons(parentNode) {
-  const divContainter = document.createElement('div')
-  divContainter.setAttribute('class', 'container-script-button')
-  const buttons = [playButtonSvg, editButtonSvg, deleteButtonSvg]
+function createListItemButtons(parentNode, buttons) {
   for (const button of buttons) {
     const scriptButton = document.createElement('button')
     scriptButton.setAttribute('class', 'button-normal')
     scriptButton.style.marginLeft = '10px'
     let imgPlayButton = document.createElement('img')
-    imgPlayButton.innerText = "<img width='10px' alt='play button'></img>"
-    imgPlayButton.src = button
+    imgPlayButton.innerText = `<img 'width='10px' alt='${button.img}'></img>`
+    imgPlayButton.src = button.img
     scriptButton.appendChild(imgPlayButton)
-    if (button === playButtonSvg) {
-      scriptButton.addEventListener('click', runScript)
-    } else if (button === editButtonSvg) {
-      scriptButton.addEventListener('click', editScript)
-    } else if (button === deleteButtonSvg) {
-      scriptButton.addEventListener('click', deleteScript)
-    }
+    scriptButton.addEventListener('click', button.handler)
     parentNode.appendChild(scriptButton)
   }
 }
+
 /**
  */
 function openFileExplorer() {
