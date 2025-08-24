@@ -10,12 +10,15 @@ contextBridge.exposeInMainWorld('scriptFunctionalities', {
   getAllGroupScripts: () => getAllGroupScripts(),
   streamScriptResult: () => {
     ipcRenderer.on('scriptResultStreaming', (event, chunk) => {
-      const customevent = new CustomEvent('script-result', { detail: chunk })
-      window.dispatchEvent(customevent)
+      const customEvent = new CustomEvent('script-result', { detail: chunk })
+      window.dispatchEvent(customEvent)
     })
   },
   createGroupScript: (groupScriptName) => createGroupScript(groupScriptName),
-  getGroupScriptElements: (groupScriptId) => getGroupScriptElements(groupScriptId)
+  getGroupScriptElements: (groupScriptId) => getGroupScriptElements(groupScriptId),
+  editScript: async (scriptId) => {
+    return await ipcRenderer.invoke('editScript', scriptId)
+  }
 })
 
 /****

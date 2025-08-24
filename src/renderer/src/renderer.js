@@ -33,14 +33,14 @@ const scriptItemsButtons = [
     handler: deleteScript
   }
 ]
-const groupScriptButons = [
+const groupScriptbuttons = [
   {
     img: chevronRightSvg,
     handler: displayGroupScript
   }
 ]
 /***
- * event lisetners
+ * event listeners
  */
 fileOpener.addEventListener('change', addScripts)
 fileOpenerButton.addEventListener('click', openFileExplorer)
@@ -65,7 +65,11 @@ async function runScript(event) {
   window.scriptFunctionalities.runScript(scriptId)
 }
 // todo need to implement this , need to check if the user has setup an application to open his scripts or not
-async function editScript() {}
+async function editScript(event) {
+  //use shell.openPath(path)
+  const scriptId = event.currentTarget.parentNode.scriptId
+  await window.scriptFunctionalities.editScript(scriptId)
+}
 
 async function deleteScript(event) {
   const scriptId = event.currentTarget.parentNode.scriptId
@@ -76,7 +80,7 @@ async function deleteScript(event) {
 async function displayGroupScript(event) {
   const groupScriptId = event.currentTarget.parentNode.groupScriptId
   const groupScriptName = event.currentTarget.parentNode.innerText
-  headerTitle.innerText = `groupe script : ${groupScriptName}`
+  headerTitle.innerText = `${groupScriptName.toUpperCase()}`
   console.log(groupScriptName)
   const { data, success } = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
   console.log(data)
@@ -101,7 +105,7 @@ async function addScripts(event) {
  * @returns  {void}
  *
  * @memberof RendererEventHandlers
- * @todo add error handelinge
+ * @todo add error handling
  */
 async function displayScriptList(groupScripts) {
   if (!groupScripts) {
@@ -150,7 +154,7 @@ async function groupScriptNameInputHandler(event) {
  */
 
 /**
- * this function is responsible creating the list items and their respective buttons and shiii
+ * this function is responsible creating the list items and their respective buttons and shit
  * @param {{dataValues:{path:string,name:string}} }   script  script fetched
  * @returns  {void}
  *
@@ -170,8 +174,7 @@ function createGroupScriptListItem(groupScript) {
   listItem.setAttribute('class', 'script-item')
   listItem.groupScriptId = groupScript.dataValues.id
   listItem.innerHTML = `<span class='group-script-name'>${groupScript.dataValues.name}</span>`
-  createListItemButtons(listItem, groupScriptButons)
-  // need to implement the grouscriptlistitembuttons
+  createListItemButtons(listItem, groupScriptbuttons)
   groupScriptList.appendChild(listItem)
 }
 

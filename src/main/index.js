@@ -11,6 +11,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { app, BrowserWindow } from 'electron/main'
 import { ipcMain } from 'electron'
+import { shell } from 'electron'
 import { Script, ScriptGroup, sequelize } from './db'
 const createWindow = () => {
   global.win = new BrowserWindow({
@@ -46,7 +47,7 @@ app.on('window-all-closed', () => {
 })
 
 /****
- * MAIN PROCESS LISTNERS
+ * MAIN PROCESS LISTENERS
  */
 ipcMain.handle('runScript', runScript)
 ipcMain.handle('addScripts', addScripts)
@@ -55,6 +56,7 @@ ipcMain.handle('getAllGroupScripts', getAllGroupScripts)
 ipcMain.handle('deleteScript', deleteScript)
 ipcMain.handle('createGroupScript', createGroupScript)
 ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
+ipcMain.handle('editScript', editScript)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -65,19 +67,19 @@ ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
  * this function is responsible for adding a script or a batch of scripts
  * @param { Electron.IpcMainInvokeEvent } event ipc event
  * @param   {Array<Script>} arrayOfScripts array of scripts to add
- * @returns  {void} retrun the function sendToRender with the data required
+ * @returns  {void} return the function sendToRender with the data required
  *
  * @memberof MainProcessHandlers
  */
 async function addScripts(event, arrayOfScripts) {
-  let querryArray = []
+  let queryArray = []
   const scriptNames = arrayOfScripts.names
   const scriptPaths = arrayOfScripts.paths
   for (let i = 0; i < scriptNames.length; i++) {
-    querryArray.unshift({ name: scriptNames[i], path: scriptPaths[i] })
+    queryArray.unshift({ name: scriptNames[i], path: scriptPaths[i] })
   }
   try {
-    const scripts = await Script.bulkCreate(querryArray)
+    const scripts = await Script.bulkCreate(queryArray)
     return sendToRender(true, scripts)
   } catch (error) {
     console.error(error)
@@ -111,7 +113,7 @@ async function getAllGroupScripts() {
  * this function is responsible for running and streaming the result of the script to the renderer process
  * @param { Electron.IpcMainInvokeEvent } event ipc event
  * @param {number} scriptId scriptId to query with
- * @returns  {function} returns the function sendToRendere
+ * @returns  {function} returns the function sendToRenderer
  *
  * @memberof MainProcessHandlers
  *
@@ -121,8 +123,8 @@ async function runScript(event, scriptId) {
   const script = await Script.findOne({ id: scriptId })
   const scriptName = script.name
   const scriptNameList = scriptName.split('.')
-  const exentsion = scriptNameList[scriptNameList.length - 1]
-  if (exentsion === 'sh' || exentsion === 'bash') {
+  const extension = scriptNameList[scriptNameList.length - 1]
+  if (extension === 'sh' || extension === 'bash') {
     const child = spawn(`sh  ${script.path} && sh ${script.path} `, { shell: true })
     sendToRender(
       true,
@@ -186,13 +188,22 @@ async function getGroupScriptElements(event, scriptGroupId) {
     }
   }
 }
+async function editScript(event, scriptId) {
+  let result = await Script.findOne({
+    where: { id: scriptId }
+  })
+  console.log(result.dataValues.path)
+  if (result.dataValues.path) {
+    await shell.openPath(result.dataValues.path)
+  }
+}
 /**
  * MAIN PROCESS UTIL FUNCTIONS
  * @namespace MainProcessUtilFunctions
  */
 
 /**
- * this function is responsible for sending data to the rendere process
+ * this function is responsible for sending data to the renderer process
  *
  * @param {boolean} [success=false]
  * @param {T} data data to transfer to the renderer process
