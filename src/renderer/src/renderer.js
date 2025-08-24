@@ -18,6 +18,7 @@ const groupScriptList = document.getElementById('group-script-list')
 const terminal = document.getElementById('terminal')
 const groupScriptCreationButton = document.getElementById('group-script-creation-button')
 const groupScriptNameInput = document.getElementById('group-script-name-input')
+const headerTitle = document.getElementById('header-title')
 const scriptItemsButtons = [
   {
     img: playButtonSvg,
@@ -74,8 +75,14 @@ async function deleteScript(event) {
 }
 async function displayGroupScript(event) {
   const groupScriptId = event.currentTarget.parentNode.groupScriptId
-  const result = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
-  //todo diplay that shit into the screen and also display the groupscript name in the title
+  const groupScriptName = event.currentTarget.parentNode.innerText
+  headerTitle.innerText = `groupe script : ${groupScriptName}`
+  console.log(groupScriptName)
+  const { data, success } = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
+  console.log(data)
+  if (success) {
+    displayScriptList(data)
+  }
 }
 /**
  * this function is responsible for sending the scripts to get stored  and trigger a re display of the script list
@@ -94,12 +101,20 @@ async function addScripts(event) {
  * @returns  {void}
  *
  * @memberof RendererEventHandlers
- * @todo add error handeling
+ * @todo add error handelinge
  */
-async function displayScriptList() {
-  const { data, success } = await window.scriptFunctionalities.getAllScripts()
-  const scripts = data
-  if (scripts && success) {
+async function displayScriptList(groupScripts) {
+  if (!groupScripts) {
+    const { data, success } = await window.scriptFunctionalities.getAllScripts()
+    const scripts = data
+    if (scripts && success) {
+      scriptList.replaceChildren()
+      for (const script of scripts) {
+        createScriptListItem(script)
+      }
+    }
+  } else {
+    const scripts = groupScripts
     scriptList.replaceChildren()
     for (const script of scripts) {
       createScriptListItem(script)

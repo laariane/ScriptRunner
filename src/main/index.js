@@ -169,16 +169,18 @@ async function createGroupScript(event, name) {
 async function getGroupScriptElements(event, scriptGroupId) {
   if (scriptGroupId) {
     try {
-      const result = await sequelize.query(`
-    SELECT  script_order, scripts.name, scripts.id as 'scriptId', sg.name as 'groupScritName'
-    FROM scripts
-    JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
-    JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
-    WHERE sg.id=${scriptGroupId}
-    ORDER BY script_order ASC
-  ;`)
-      console.log(result[0])
-      return sendToRender(true, result[0])
+      let result = await sequelize.query(`
+      SELECT  scripts.name,path
+      FROM scripts
+      JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
+      JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
+      WHERE sg.id=${scriptGroupId}
+      ORDER BY script_order ASC
+    ;`)
+      let finaleResult = result[0].map((result) => {
+        return { dataValues: result }
+      })
+      return sendToRender(true, finaleResult)
     } catch (error) {
       return sendToRender(false, error)
     }

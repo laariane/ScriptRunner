@@ -34,24 +34,5 @@ ScriptGroup_Script.init(
 Script.belongsToMany(ScriptGroup, { through: ScriptGroup_Script })
 ScriptGroup.belongsToMany(Script, { through: ScriptGroup_Script, as: 'scripts' })
 
-async function addDummyScript() {
-  await sequelize.sync({ force: true }) // Ensure tables are created
-  ScriptGroup.create(
-    {
-      name: 'groupScript1',
-      scripts: [
-        {
-          path: 'C:\\Users\\admn\\Dev\\electron\\my-electron-app\\scripts\\openvscode.sh',
-          name: 'openvscode.sh',
-          ScriptGroup_Script: {
-            script_order: 1
-          }
-        }
-      ]
-    },
-    {
-      include: [{ model: Script, as: 'scripts' }]
-    }
-  ).then((result) => console.log(result))
-}
+sequelize.sync().then(console.log('database init'))
 // addDummyScript()
