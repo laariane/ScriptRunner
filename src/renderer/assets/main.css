@@ -44,8 +44,7 @@ body {
   grid-template-columns: 1fr 4fr;
   height: 100vh;
   width: 100vw;
-  margin-right: auto;
-  margin-left: auto;
+
 }
 
 #header {
@@ -58,21 +57,19 @@ body {
 }
 
 #left-panel {
-  width: 100%;
   grid-column-start: 1;
   border: #eceff4 solid 1px;
   border-radius: 10px;
   margin-left: 2px;
-  padding-left: 1rem;
-  padding-top: 2rem;
+  margin-right: 2px;
+  padding: 1rem;
 }
 
 #right-panel {
-  width: 92.5%;
   border: #eceff4 solid 1px;
   border-radius: 10px;
   padding: 1rem;
-  margin-left: 30px;
+  margin-left: 10px;
 }
 
 #footer {
@@ -118,7 +115,6 @@ body {
 }
 
 .terminal-container {
-  width: 94%;
   border: #eceff4 solid 1px;
   max-height: 100%;
   border-radius: 10px;
@@ -132,8 +128,32 @@ body {
 
 .container-script-button {
   display: flex;
-  gap: 5px;
+  gap: 2px;
+  margin-left: auto;
 }
+
 #file-opener {
   display: none;
+}
+
+#group-script-name-input {
+  display: none;
+  width: 100%;
+}
+
+#group-script-list {
+  height: 100%;
+  margin-top: 10px;
+  margin-left: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: auto;
+}
+
+#group-script-list>.script-item>span {
+  margin-right: auto;
+}
+.button-normal > img{
+  min-width: 10px;
 }

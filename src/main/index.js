@@ -11,7 +11,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { app, BrowserWindow } from 'electron/main'
 import { ipcMain } from 'electron'
-import { Script } from './db'
+import { Script, ScriptGroup, sequelize } from './db'
 const createWindow = () => {
   global.win = new BrowserWindow({
     width: 1200,
@@ -20,7 +20,12 @@ const createWindow = () => {
       preload: path.join(__dirname, '..', 'preload/', 'index.js')
     }
   })
-  global.win.loadFile(path.join(__dirname, '..', 'renderer/', 'index.html'))
+  // global.win.loadFile(path.join(__dirname, '..', 'renderer/', 'index.html'))
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
+    global.win.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    global.win.loadFile(path.join(__dirname, '../renderer/index.html'))
+  }
 }
 
 app.whenReady().then(() => {
@@ -46,7 +51,10 @@ app.on('window-all-closed', () => {
 ipcMain.handle('runScript', runScript)
 ipcMain.handle('addScripts', addScripts)
 ipcMain.handle('getAllScripts', getAllScripts)
+ipcMain.handle('getAllGroupScripts', getAllGroupScripts)
 ipcMain.handle('deleteScript', deleteScript)
+ipcMain.handle('createGroupScript', createGroupScript)
+ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -68,7 +76,6 @@ async function addScripts(event, arrayOfScripts) {
   for (let i = 0; i < scriptNames.length; i++) {
     querryArray.unshift({ name: scriptNames[i], path: scriptPaths[i] })
   }
-  console.log(querryArray)
   try {
     const scripts = await Script.bulkCreate(querryArray)
     return sendToRender(true, scripts)
@@ -88,6 +95,14 @@ async function getAllScripts() {
   try {
     const scripts = await Script.findAll()
     return sendToRender(true, scripts)
+  } catch (error) {
+    return sendToRender(false, error.errors[0].message)
+  }
+}
+async function getAllGroupScripts() {
+  try {
+    const groupScripts = await ScriptGroup.findAll()
+    return sendToRender(true, groupScripts)
   } catch (error) {
     return sendToRender(false, error.errors[0].message)
   }
@@ -132,7 +147,6 @@ async function runScript(event, scriptId) {
 }
 
 async function deleteScript(event, scriptId) {
-  console.log(scriptId)
   try {
     const result = await Script.destroy({
       where: {
@@ -142,6 +156,34 @@ async function deleteScript(event, scriptId) {
     sendToRender(true, result.toString(), 'scriptResultStreaming')
   } catch (error) {
     sendToRender(true, error.toString(), 'scriptResultStreaming')
+  }
+}
+async function createGroupScript(event, name) {
+  if (name) {
+    const result = await ScriptGroup.create({
+      name: name
+    })
+    return result
+  }
+}
+async function getGroupScriptElements(event, scriptGroupId) {
+  if (scriptGroupId) {
+    try {
+      let result = await sequelize.query(`
+      SELECT  scripts.name,path
+      FROM scripts
+      JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
+      JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
+      WHERE sg.id=${scriptGroupId}
+      ORDER BY script_order ASC
+    ;`)
+      let finaleResult = result[0].map((result) => {
+        return { dataValues: result }
+      })
+      return sendToRender(true, finaleResult)
+    } catch (error) {
+      return sendToRender(false, error)
+    }
   }
 }
 /**
