@@ -1,12 +1,3 @@
-/***
-  i need an add button for the script group creation
-  i need and add button for the script group scripts adding
-  i need to be able to delete the scripts of a group or the group itself
-  i need to be able to order the scripts in a script group
-  i need to be able to run the script group
-  i need to keep the state in the application
- */
-
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { app, BrowserWindow } from 'electron/main'
