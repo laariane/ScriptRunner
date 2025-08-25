@@ -3,10 +3,20 @@ import playButtonSvg from '../assets/svgs/play-solid-full-green.svg'
 import editButtonSvg from '../assets/svgs/pen-to-square-solid-full.svg'
 import deleteButtonSvg from '../assets/svgs/trash-solid-full.svg'
 import chevronRightSvg from '../assets/svgs/chevron-right.svg'
-
+/**
+ * window events
+ */
 window.addEventListener('DOMContentLoaded', init)
 window.scriptFunctionalities.streamScriptResult()
 window.addEventListener('script-result', readResultsToTerminal)
+
+/**
+ * state of the application
+ */
+const state = {
+  processId: null
+}
+// when we run the script change the button to to stop
 /**
  * script consts
  */
@@ -61,12 +71,16 @@ groupScriptNameInput.addEventListener('blur', () => {
  * @memberof RendererEventHandlers
  */
 async function runScript(event) {
+  console.log(event.currentTarget.parentNode)
   const scriptId = event.currentTarget.parentNode.scriptId
-  window.scriptFunctionalities.runScript(scriptId)
+  const result = await window.scriptFunctionalities.runScript(scriptId)
+  if (result) {
+    state.processId = result.data
+    changePlayButtonIntoStopButton(event.currentTarget)
+  }
 }
 // todo need to implement this , need to check if the user has setup an application to open his scripts or not
 async function editScript(event) {
-  //use shell.openPath(path)
   const scriptId = event.currentTarget.parentNode.scriptId
   await window.scriptFunctionalities.editScript(scriptId)
 }
@@ -180,8 +194,18 @@ function createGroupScriptListItem(groupScript) {
 
 function readResultsToTerminal(event) {
   const paragraph = document.createElement('p')
-  paragraph.innerHTML = convert.toHtml(event.detail.data) + '\n'
-  terminal.appendChild(paragraph)
+  if (
+    typeof event.detail.data !== 'string' &&
+    'processId' in event.detail.data &&
+    event.detail.data.processId === state.processId
+  ) {
+    state.processId = null
+    paragraph.innerHTML = convert.toHtml(event.detail.data.description) + '\n'
+    terminal.appendChild(paragraph)
+  } else {
+    paragraph.innerHTML = convert.toHtml(event.detail.data) + '\n'
+    terminal.appendChild(paragraph)
+  }
 }
 /**
  *
@@ -200,7 +224,9 @@ function createListItemButtons(parentNode, buttons) {
     parentNode.appendChild(scriptButton)
   }
 }
-
+function changePlayButtonIntoStopButton(currentNode) {
+  console.log(currentNode)
+}
 /**
  */
 function openFileExplorer() {

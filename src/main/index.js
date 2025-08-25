@@ -111,32 +111,33 @@ async function getAllGroupScripts() {
  * @todo figure out a way to kill child processes when we are done with them think about the case of multiple
  */
 async function runScript(event, scriptId) {
-  const script = await Script.findOne({ id: scriptId })
+  const script = await Script.findOne({ where: { id: scriptId } })
   const scriptName = script.name
-  const scriptNameList = scriptName.split('.')
-  const extension = scriptNameList[scriptNameList.length - 1]
-  if (extension === 'sh' || extension === 'bash') {
-    const child = spawn(`sh  ${script.path} && sh ${script.path} `, { shell: true })
+  //const scriptNameList = scriptName.split('.')
+  const child = spawn(`${script.path}`, { shell: true })
+  sendToRender(
+    true,
+    `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
+    'scriptResultStreaming'
+  )
+  process.stdin.pipe(child.stdin)
+  child.stdout.on('data', (chunk) => {
+    sendToRender(true, chunk.toString(), 'scriptResultStreaming')
+  })
+  child.stderr.on('data', (chunk) => {
+    sendToRender(true, chunk.toString(), 'scriptResultStreaming')
+  })
+  child.on('close', (code) => {
     sendToRender(
       true,
-      `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
+      {
+        processId: child.pid,
+        description: `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`
+      },
       'scriptResultStreaming'
     )
-    process.stdin.pipe(child.stdin)
-    child.stdout.on('data', (chunk) => {
-      sendToRender(true, chunk.toString(), 'scriptResultStreaming')
-    })
-    child.stderr.on('data', (chunk) => {
-      sendToRender(true, chunk.toString(), 'scriptResultStreaming')
-    })
-    child.on('close', (code) => {
-      sendToRender(
-        true,
-        `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`,
-        'scriptResultStreaming'
-      )
-    })
-  }
+  })
+  return sendToRender(true, child.pid)
 }
 
 async function deleteScript(event, scriptId) {
