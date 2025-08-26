@@ -48,6 +48,7 @@ ipcMain.handle('deleteScript', deleteScript)
 ipcMain.handle('createGroupScript', createGroupScript)
 ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 ipcMain.handle('editScript', editScript)
+ipcMain.handle('stopScript', stopScript)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -114,7 +115,7 @@ async function runScript(event, scriptId) {
   const script = await Script.findOne({ where: { id: scriptId } })
   const scriptName = script.name
   //const scriptNameList = scriptName.split('.')
-  const child = spawn(`${script.path}`, { shell: true })
+  const child = spawn(`${script.path}`)
   sendToRender(
     true,
     `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
@@ -124,18 +125,33 @@ async function runScript(event, scriptId) {
   child.stdout.on('data', (chunk) => {
     sendToRender(true, chunk.toString(), 'scriptResultStreaming')
   })
-  child.stderr.on('data', (chunk) => {
+  child.on('data', (chunk) => {
     sendToRender(true, chunk.toString(), 'scriptResultStreaming')
   })
+  child.on('SIGINT', () => {
+    console.log('something here')
+  })
   child.on('close', (code) => {
-    sendToRender(
-      true,
-      {
-        processId: child.pid,
-        description: `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`
-      },
-      'scriptResultStreaming'
-    )
+    if (code) {
+      sendToRender(
+        true,
+        {
+          processId: child.pid,
+          description: `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`
+        },
+        'scriptResultStreaming'
+      )
+    } else {
+      sendToRender(
+        true,
+        {
+          processId: child.pid,
+          scriptId,
+          description: `--------------${scriptName} STOPPED -------------------`
+        },
+        'scriptResultStreaming'
+      )
+    }
   })
   return sendToRender(true, child.pid)
 }
@@ -164,7 +180,7 @@ async function getGroupScriptElements(event, scriptGroupId) {
   if (scriptGroupId) {
     try {
       let result = await sequelize.query(`
-      SELECT  scripts.name,path
+      SELECT  scripts.id,scripts.name,path
       FROM scripts
       JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
       JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
@@ -188,6 +204,11 @@ async function editScript(event, scriptId) {
   if (result.dataValues.path) {
     await shell.openPath(result.dataValues.path)
   }
+}
+async function stopScript(event, processId) {
+  const result = process.kill(processId, 'SIGINT')
+  console.log(`${processId} killed`)
+  console.log(result)
 }
 /**
  * MAIN PROCESS UTIL FUNCTIONS
