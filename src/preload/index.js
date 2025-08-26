@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('scriptFunctionalities', {
   getGroupScriptElements: (groupScriptId) => getGroupScriptElements(groupScriptId),
   editScript: async (scriptId) => {
     return await ipcRenderer.invoke('editScript', scriptId)
+  },
+  stopScript: async (processId) => {
+    return await ipcRenderer.invoke('stopScript', processId)
   }
 })
 

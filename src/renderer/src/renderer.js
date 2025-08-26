@@ -3,10 +3,22 @@ import playButtonSvg from '../assets/svgs/play-solid-full-green.svg'
 import editButtonSvg from '../assets/svgs/pen-to-square-solid-full.svg'
 import deleteButtonSvg from '../assets/svgs/trash-solid-full.svg'
 import chevronRightSvg from '../assets/svgs/chevron-right.svg'
-
+import stopSquare from '../assets/svgs/stop-square.svg'
+/**
+ * window events
+ */
 window.addEventListener('DOMContentLoaded', init)
 window.scriptFunctionalities.streamScriptResult()
 window.addEventListener('script-result', readResultsToTerminal)
+
+/**
+ * state of the application
+ */
+const state = {
+  processId: null,
+  running: false
+}
+// when we run the script change the button to to stop
 /**
  * script consts
  */
@@ -62,11 +74,24 @@ groupScriptNameInput.addEventListener('blur', () => {
  */
 async function runScript(event) {
   const scriptId = event.currentTarget.parentNode.scriptId
-  window.scriptFunctionalities.runScript(scriptId)
+  const target = event.currentTarget
+  const result = await window.scriptFunctionalities.runScript(scriptId)
+  if (result) {
+    changePlayButtonIntoStopButton(target)
+    state.processId = result.data
+    state.running = true
+  }
+}
+async function stopScript(event, currentNode) {
+  //stop the script
+  const result = await window.scriptFunctionalities.stopScript(state.processId)
+  state.processId = null
+  state.running = false
+  currentNode.addEventListener('click', runScript)
+  currentNode.firstChild.src = playButtonSvg
 }
 // todo need to implement this , need to check if the user has setup an application to open his scripts or not
 async function editScript(event) {
-  //use shell.openPath(path)
   const scriptId = event.currentTarget.parentNode.scriptId
   await window.scriptFunctionalities.editScript(scriptId)
 }
@@ -128,6 +153,7 @@ async function displayScriptList(groupScripts) {
 async function displayGroupScriptList() {
   const { data, success } = await window.scriptFunctionalities.getAllGroupScripts()
   const groupScripts = data
+  console.log(groupScripts)
   if (groupScripts && success) {
     groupScriptList.replaceChildren()
     for (const group of groupScripts) {
@@ -180,8 +206,22 @@ function createGroupScriptListItem(groupScript) {
 
 function readResultsToTerminal(event) {
   const paragraph = document.createElement('p')
-  paragraph.innerHTML = convert.toHtml(event.detail.data) + '\n'
-  terminal.appendChild(paragraph)
+  if (typeof event.detail.data !== 'string' && 'processId' in event.detail.data) {
+    paragraph.innerHTML = convert.toHtml(event.detail.data.description) + '\n'
+    console.log(event.detail)
+    terminal.appendChild(paragraph)
+    state.processId = null
+    state.running = false
+    let listItemToReset
+    scriptList.childNodes.forEach((item) => {
+      if (item.scriptId === event.detail.data.scriptId) listItemToReset = item
+    })
+    changeStopButtonIntoPlayButton(listItemToReset)
+  } else {
+    console.log(event.detail)
+    paragraph.innerHTML = convert.toHtml(event.detail.data) + '\n'
+    terminal.appendChild(paragraph)
+  }
 }
 /**
  *
@@ -200,7 +240,16 @@ function createListItemButtons(parentNode, buttons) {
     parentNode.appendChild(scriptButton)
   }
 }
-
+function changePlayButtonIntoStopButton(currentNode) {
+  currentNode.firstChild.src = stopSquare
+  currentNode.removeEventListener('click', runScript)
+  currentNode.addEventListener('click', (event) => stopScript(event, currentNode), { once: true })
+}
+function changeStopButtonIntoPlayButton(currentNode) {
+  let buttonToChange = currentNode.childNodes[2]
+  buttonToChange.firstChild.src = playButtonSvg
+  buttonToChange.addEventListener('click', runScript)
+}
 /**
  */
 function openFileExplorer() {

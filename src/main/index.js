@@ -48,6 +48,7 @@ ipcMain.handle('deleteScript', deleteScript)
 ipcMain.handle('createGroupScript', createGroupScript)
 ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 ipcMain.handle('editScript', editScript)
+ipcMain.handle('stopScript', stopScript)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -111,32 +112,48 @@ async function getAllGroupScripts() {
  * @todo figure out a way to kill child processes when we are done with them think about the case of multiple
  */
 async function runScript(event, scriptId) {
-  const script = await Script.findOne({ id: scriptId })
+  const script = await Script.findOne({ where: { id: scriptId } })
   const scriptName = script.name
-  const scriptNameList = scriptName.split('.')
-  const extension = scriptNameList[scriptNameList.length - 1]
-  if (extension === 'sh' || extension === 'bash') {
-    const child = spawn(`sh  ${script.path} && sh ${script.path} `, { shell: true })
-    sendToRender(
-      true,
-      `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
-      'scriptResultStreaming'
-    )
-    process.stdin.pipe(child.stdin)
-    child.stdout.on('data', (chunk) => {
-      sendToRender(true, chunk.toString(), 'scriptResultStreaming')
-    })
-    child.stderr.on('data', (chunk) => {
-      sendToRender(true, chunk.toString(), 'scriptResultStreaming')
-    })
-    child.on('close', (code) => {
+  //const scriptNameList = scriptName.split('.')
+  const child = spawn(`${script.path}`)
+  sendToRender(
+    true,
+    `--------------RUNNING SCRIPT ${scriptName} ------------------- `,
+    'scriptResultStreaming'
+  )
+  process.stdin.pipe(child.stdin)
+  child.stdout.on('data', (chunk) => {
+    sendToRender(true, chunk.toString(), 'scriptResultStreaming')
+  })
+  child.on('data', (chunk) => {
+    sendToRender(true, chunk.toString(), 'scriptResultStreaming')
+  })
+  child.on('SIGINT', () => {
+    console.log('something here')
+  })
+  child.on('close', (code) => {
+    if (code) {
       sendToRender(
         true,
-        `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`,
+        {
+          processId: child.pid,
+          description: `--------------${scriptName} EXITED WITH CODE: ${code} -------------------`
+        },
         'scriptResultStreaming'
       )
-    })
-  }
+    } else {
+      sendToRender(
+        true,
+        {
+          processId: child.pid,
+          scriptId,
+          description: `--------------${scriptName} STOPPED -------------------`
+        },
+        'scriptResultStreaming'
+      )
+    }
+  })
+  return sendToRender(true, child.pid)
 }
 
 async function deleteScript(event, scriptId) {
@@ -163,7 +180,7 @@ async function getGroupScriptElements(event, scriptGroupId) {
   if (scriptGroupId) {
     try {
       let result = await sequelize.query(`
-      SELECT  scripts.name,path
+      SELECT  scripts.id,scripts.name,path
       FROM scripts
       JOIN "ScriptGroup_Scripts" sgs ON scripts.id = sgs.scriptId
       JOIN "scriptGroups" sg ON sg.id = sgs."scriptGroupId"
@@ -187,6 +204,11 @@ async function editScript(event, scriptId) {
   if (result.dataValues.path) {
     await shell.openPath(result.dataValues.path)
   }
+}
+async function stopScript(event, processId) {
+  const result = process.kill(processId, 'SIGINT')
+  console.log(`${processId} killed`)
+  console.log(result)
 }
 /**
  * MAIN PROCESS UTIL FUNCTIONS
