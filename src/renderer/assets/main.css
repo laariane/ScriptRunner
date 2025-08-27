@@ -155,5 +155,6 @@ body {
   margin-right: auto;
 }
 .button-normal > img{
-  min-width: 10px;
+  min-width:15px;
+  max-height: 15px;
 }

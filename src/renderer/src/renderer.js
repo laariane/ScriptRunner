@@ -35,8 +35,12 @@ const scriptItemsButtons = [
 ]
 const groupScriptbuttons = [
   {
+    img: deleteButtonSvg,
+    handler: deleteGroupScript
+  },
+  {
     img: chevronRightSvg,
-    handler: displayGroupScript
+    handler: displayGroupScripts
   }
 ]
 /***
@@ -77,7 +81,13 @@ async function deleteScript(event) {
   window.scriptFunctionalities.deleteScript(scriptId)
   displayScriptList()
 }
-async function displayGroupScript(event) {
+async function deleteGroupScript(event) {
+  const groupScriptId = event.currentTarget.parentNode.groupScriptId
+  console.log(groupScriptId)
+  window.scriptFunctionalities.deleteGroupScript(groupScriptId)
+  displayGroupScriptList()
+}
+async function displayGroupScripts(event) {
   const groupScriptId = event.currentTarget.parentNode.groupScriptId
   const groupScriptName = event.currentTarget.parentNode.innerText
   headerTitle.innerText = `${groupScriptName.toUpperCase()}`
@@ -193,7 +203,7 @@ function createListItemButtons(parentNode, buttons) {
     scriptButton.setAttribute('class', 'button-normal')
     scriptButton.style.marginLeft = '10px'
     let imgPlayButton = document.createElement('img')
-    imgPlayButton.innerText = `<img 'width='10px' alt='${button.img}'></img>`
+    imgPlayButton.innerText = `<img height='10px' width='10px' alt='${button.img}'></img>`
     imgPlayButton.src = button.img
     scriptButton.appendChild(imgPlayButton)
     scriptButton.addEventListener('click', button.handler)

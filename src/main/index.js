@@ -48,7 +48,7 @@ ipcMain.handle('deleteScript', deleteScript)
 ipcMain.handle('createGroupScript', createGroupScript)
 ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 ipcMain.handle('editScript', editScript)
-
+ipcMain.handle('deleteGroupScript', deleteGroupScript)
 /**
  * MAIN PROCESS HANDLERS
  * @namespace MainProcessHandlers
@@ -144,6 +144,18 @@ async function deleteScript(event, scriptId) {
     const result = await Script.destroy({
       where: {
         id: scriptId
+      }
+    })
+    sendToRender(true, result.toString(), 'scriptResultStreaming')
+  } catch (error) {
+    sendToRender(true, error.toString(), 'scriptResultStreaming')
+  }
+}
+async function deleteGroupScript(event, groupScriptId) {
+  try {
+    const result = await ScriptGroup.destroy({
+      where: {
+        id: groupScriptId
       }
     })
     sendToRender(true, result.toString(), 'scriptResultStreaming')
