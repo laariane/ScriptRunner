@@ -31,6 +31,7 @@ const terminal = document.getElementById('terminal')
 const groupScriptCreationButton = document.getElementById('group-script-creation-button')
 const groupScriptNameInput = document.getElementById('group-script-name-input')
 const headerTitle = document.getElementById('header-title')
+const ListAllScriptsButton = document.getElementById('list-all-scripts-button')
 const scriptItemsButtons = [
   {
     img: playButtonSvg,
@@ -64,6 +65,10 @@ groupScriptCreationButton.addEventListener('click', createGroupScript)
 groupScriptNameInput.addEventListener('keyup', groupScriptNameInputHandler)
 groupScriptNameInput.addEventListener('blur', () => {
   groupScriptNameInput.style.display = 'none'
+})
+ListAllScriptsButton.addEventListener('click', () => {
+  headerTitle.innerText = 'ALL SCRIPTS'
+  displayScriptList()
 })
 
 /**
