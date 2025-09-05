@@ -32,8 +32,13 @@ const groupScriptCreationButton = document.getElementById('group-script-creation
 const groupScriptNameInput = document.getElementById('group-script-name-input')
 const headerTitle = document.getElementById('header-title')
 const ListAllScriptsButton = document.getElementById('list-all-scripts-button')
-const dialogToAddFiles = document.getElementById('dialog-to-add-files')
+const dialogTriggerToAddFiles = document.getElementById('dialog-to-add-files')
 const dialogScriptList = document.getElementById('dialog-script-list')
+const dialogAllScriptsRadioButton = document.getElementById('all-scripts-radio')
+const dialogGroupScriptRadioButton = document.getElementById('group-radio')
+const dialogForm = document.getElementById('dialog-form')
+const dialogFromSubmitButton = document.getElementById('dialog-submit-button')
+const dialogLocalFileOpenerButton = document.getElementById('dialog-local-file-opener')
 const scriptItemsButtons = [
   {
     img: playButtonSvg,
@@ -70,12 +75,28 @@ groupScriptNameInput.addEventListener('blur', () => {
 })
 ListAllScriptsButton.addEventListener('click', () => {
   headerTitle.innerText = 'ALL SCRIPTS'
-  displayScriptList()
+  displayScriptList(null, scriptList)
 })
+dialogAllScriptsRadioButton.addEventListener('click', () => {
+  dialogScriptList.replaceChildren()
+  dialogFromSubmitButton.style.display = 'none'
+  dialogLocalFileOpenerButton.style.display = 'block'
 
+})
+dialogGroupScriptRadioButton.addEventListener('click', () => {
+  displayScriptList(null, dialogScriptList)
+  dialogFromSubmitButton.style.display = 'block'
+  dialogLocalFileOpenerButton.style.display = 'none'
+})
+dialogForm.addEventListener('submit', (e) => {
+  e.preventDefault()
+  // console.log(e.currentTarget.elements[0].value)
+  dialogTriggerToAddFiles.close()
+})
 /**
  *  @namespace RendererEventHandlers
  */
+
 /**
  * this function is responsible for sending the id to the main process to get processed :]
  * @param {Event}    event html event
@@ -207,8 +228,11 @@ function createScriptListItem(script, nodeToFill) {
   let listItem = document.createElement('li')
   listItem.setAttribute('class', 'script-item')
   listItem.scriptId = script.dataValues.id
-  listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
-  if (nodeToFill !== dialogScriptList) {
+  if (nodeToFill === dialogScriptList) {
+    listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span>`
+    createDialogListItemButtons(listItem)
+  } else {
+    listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
     createListItemButtons(listItem, scriptItemsButtons)
   }
   nodeToFill.appendChild(listItem)
@@ -260,6 +284,14 @@ function createListItemButtons(parentNode, buttons) {
     parentNode.appendChild(scriptButton)
   }
 }
+function createDialogListItemButtons(parentNode) {
+  const confirmRadioButton = document.createElement('input')
+  confirmRadioButton.type = 'checkbox'
+  confirmRadioButton.value = parentNode.scriptId
+  confirmRadioButton.id = parentNode.scriptId
+  confirmRadioButton.setAttribute('class', 'confirmRadioButton')
+  parentNode.appendChild(confirmRadioButton)
+}
 function changePlayButtonIntoStopButton(currentNode) {
   currentNode.firstChild.src = stopSquare
   currentNode.removeEventListener('click', runScript)
@@ -273,8 +305,7 @@ function changeStopButtonIntoPlayButton(currentNode) {
 /**
  */
 function openFileExplorer() {
-  dialogToAddFiles.showModal()
-  displayScriptList(null, dialogScriptList)
+  dialogTriggerToAddFiles.showModal()
   // fileOpener.click()
 }
 
