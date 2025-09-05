@@ -32,6 +32,8 @@ const groupScriptCreationButton = document.getElementById('group-script-creation
 const groupScriptNameInput = document.getElementById('group-script-name-input')
 const headerTitle = document.getElementById('header-title')
 const ListAllScriptsButton = document.getElementById('list-all-scripts-button')
+const dialogToAddFiles = document.getElementById('dialog-to-add-files')
+const dialogScriptList = document.getElementById('dialog-script-list')
 const scriptItemsButtons = [
   {
     img: playButtonSvg,
@@ -109,7 +111,7 @@ async function deleteScript(event) {
   const scriptId = event.currentTarget.parentNode.scriptId
   console.log(scriptId)
   window.scriptFunctionalities.deleteScript(scriptId)
-  displayScriptList()
+  displayScriptList(null, scriptList)
 }
 async function deleteGroupScript(event) {
   const groupScriptId = event.currentTarget.parentNode.groupScriptId
@@ -125,7 +127,7 @@ async function displayGroupScripts(event) {
   const { data, success } = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
   console.log(data)
   if (success) {
-    displayScriptList(data)
+    displayScriptList(data, scriptList)
   }
 }
 /**
@@ -138,7 +140,7 @@ async function displayGroupScripts(event) {
 async function addScripts(event) {
   const files = event.target.files
   await window.scriptFunctionalities.readScriptsPath(files)
-  displayScriptList()
+  displayScriptList(null, scriptList)
 }
 /**
  * this function is responsible for displaying the list of scripts
@@ -147,28 +149,27 @@ async function addScripts(event) {
  * @memberof RendererEventHandlers
  * @todo add error handling
  */
-async function displayScriptList(groupScripts) {
+async function displayScriptList(groupScripts, nodeToFill) {
   if (!groupScripts) {
     const { data, success } = await window.scriptFunctionalities.getAllScripts()
     const scripts = data
     if (scripts && success) {
-      scriptList.replaceChildren()
+      nodeToFill.replaceChildren()
       for (const script of scripts) {
-        createScriptListItem(script)
+        createScriptListItem(script, nodeToFill)
       }
     }
   } else {
     const scripts = groupScripts
     scriptList.replaceChildren()
     for (const script of scripts) {
-      createScriptListItem(script)
+      createScriptListItem(script, nodeToFill)
     }
   }
 }
 async function displayGroupScriptList() {
   const { data, success } = await window.scriptFunctionalities.getAllGroupScripts()
   const groupScripts = data
-  console.log(groupScripts)
   if (groupScripts && success) {
     groupScriptList.replaceChildren()
     for (const group of groupScripts) {
@@ -197,17 +198,20 @@ async function groupScriptNameInputHandler(event) {
 /**
  * this function is responsible creating the list items and their respective buttons and shit
  * @param {{dataValues:{path:string,name:string}} }   script  script fetched
+ * @param nodeToFill
  * @returns  {void}
  *
  * @memberof RendererUtils
  */
-function createScriptListItem(script) {
+function createScriptListItem(script, nodeToFill) {
   let listItem = document.createElement('li')
   listItem.setAttribute('class', 'script-item')
   listItem.scriptId = script.dataValues.id
   listItem.innerHTML = `<span class='script-name'>${script.dataValues.name}</span><span class='script-path'> ${script.dataValues.path}</span>`
-  createListItemButtons(listItem, scriptItemsButtons, 'scriptItem')
-  scriptList.appendChild(listItem)
+  if (nodeToFill !== dialogScriptList) {
+    createListItemButtons(listItem, scriptItemsButtons)
+  }
+  nodeToFill.appendChild(listItem)
 }
 
 function createGroupScriptListItem(groupScript) {
@@ -241,6 +245,7 @@ function readResultsToTerminal(event) {
 /**
  *
  * @param {HTMLElement} parentNode
+ * @param buttons
  */
 function createListItemButtons(parentNode, buttons) {
   for (const button of buttons) {
@@ -268,10 +273,12 @@ function changeStopButtonIntoPlayButton(currentNode) {
 /**
  */
 function openFileExplorer() {
-  fileOpener.click()
+  dialogToAddFiles.showModal()
+  displayScriptList(null, dialogScriptList)
+  // fileOpener.click()
 }
 
 function init() {
-  displayScriptList()
+  displayScriptList(null, scriptList)
   displayGroupScriptList()
 }
