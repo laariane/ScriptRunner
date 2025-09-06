@@ -1,42 +1,79 @@
 <!doctype html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta charset="UTF-8" />
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; img-src 'self' data:"
-    />
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
-    <link rel="stylesheet" href="./assets/main.css" />
-    <title>Script Runner</title>
-  </head>
-  <body>
-    <div class="base-layout">
-      <div id="header">
-        <h1 id="header-title">ALL SCRIPTS</h1>
-      </div>
-      <div id="left-panel">
-        <button class="button-normal" id="group-script-creation-button">
-          <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
-        </button>
-        <input type="text" name="group-script-name-input" id="group-script-name-input" />
-        <div class="script-list-container">
-          <ul id="group-script-list"></ul>
-        </div>
-      </div>
-      <div id="right-panel">
-        <button class="button-normal" id="file-opener-button">
-          <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
-        </button>
-        <input type="file" name="file-opener" id="file-opener" multiple />
-        <div class="script-list-container">
-          <ul id="script-list"></ul>
-        </div>
-      </div>
-      <div id="terminal" class="terminal-container"></div>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; img-src 'self' data:"
+  />
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+  <link rel="stylesheet" href="./assets/main.css" />
+  <title>Script Runner</title>
+</head>
+<body>
+<div class="base-layout">
+  <div id="header">
+    <h1 id="header-title">ALL SCRIPTS</h1>
+  </div>
+  <div id="left-panel">
+    <button class="button-normal" id="group-script-creation-button">
+      <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
+    </button>
+    <input type="text" name="group-script-name-input" id="group-script-name-input" />
+    <div class="script-list-container">
+      <ul id="group-script-list"></ul>
     </div>
-  </body>
-  <script type="module" src="./src/renderer.js"></script>
+  </div>
+  <div id="right-panel">
+    <div class="right-panel-buttons">
+      <button class="button-normal" id="list-all-scripts-button">
+        <img src="./assets/svgs/list-all-scripts.svg" alt="list all scripts" />
+      </button>
+      <button class="button-normal" id="file-opener-button">
+        <img width="35px" src="./assets/svgs/plus-solid-full.svg" alt="adding file icon" />
+      </button>
+    </div>
+    <input type="file" name="file-opener" id="file-opener" multiple />
+    <div class="script-list-container">
+      <ul id="script-list"></ul>
+    </div>
+  </div>
+  <div id="terminal" class="terminal-container"></div>
+</div>
+<dialog id="dialog-to-add-files" closedby="any">
+  <div class="dialog-content">
+  <p>Add Scripts to :</p>
+  <div class="dialog-radio-buttons">
+    <div>
+      <input
+        type="radio"
+        id="all-scripts-radio"
+        name="groupToAddTo"
+        value="allScripts"
+        checked
+      />
+      <label for="all-scripts-radio">All Scripts</label>
+    </div>
+
+    <div>
+      <input type="radio" id="group-radio" name="groupToAddTo" value="group" />
+      <label for="group-radio">A Group Script</label>
+    </div>
+  </div>
+  <div id="dialog-group-script-list-container" class="script-list-container">
+    <label for="dialog-group-script-select">Choose Which Group Script To Add To </label>
+    <select name="" id="dialog-group-script-select">
+    </select>
+    <form id="dialog-form">
+      <ul id="dialog-script-list"></ul>
+    <button type="submit" id="dialog-submit-button" form="dialog-form"> confirm</button>
+    </form>
+  </div>
+    <button id="dialog-local-file-opener">choose from local files</button>
+  </div>
+</dialog>
+</body>
+<script type="module" src="./src/renderer.js"></script>
 </html>

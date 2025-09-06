@@ -151,10 +151,79 @@ body {
   overflow: auto;
 }
 
-#group-script-list>.script-item>span {
+#group-script-list > .script-item > span {
   margin-right: auto;
 }
-.button-normal > img{
-  min-width:15px;
+
+.button-normal > img {
+  min-width: 15px;
   max-height: 15px;
+}
+
+.right-panel-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+dialog::backdrop {
+  background-color: black;
+  opacity: 0.75;
+}
+
+dialog {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: auto;
+  min-width: 70%;
+
+}
+
+.dialog-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-radio-buttons {
+  margin-bottom: 1rem;
+}
+
+#dialog-to-add-files > p {
+  margin-bottom: 1rem;
+}
+
+#dialog-script-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.confirmRadioButton {
+  margin-left: auto;
+}
+
+#dialog-submit-button {
+  width: 30%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#dialog-local-file-opener {
+  width: 30%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#dialog-group-script-list-container {
+  display: none;
+  flex-direction: column;
+}
+
+#dialog-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
 }

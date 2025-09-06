@@ -50,6 +50,7 @@ ipcMain.handle('getGroupScriptElements', getGroupScriptElements)
 ipcMain.handle('editScript', editScript)
 ipcMain.handle('deleteGroupScript', deleteGroupScript)
 ipcMain.handle('stopScript', stopScript)
+ipcMain.handle('addScriptsToGroupScript', addScriptsToGroupScript)
 
 /**
  * MAIN PROCESS HANDLERS
@@ -221,6 +222,21 @@ async function editScript(event, scriptId) {
 async function stopScript(event, processId) {
   const result = process.kill(processId, 'SIGINT')
   console.log(`${processId} killed`)
+  console.log(result)
+}
+async function addScriptsToGroupScript(event, data) {
+  let script_order = 1
+  let query = `INSERT INTO ScriptGroup_Scripts (script_order,scriptId,scriptGroupId,createdAt,updatedAt) values`
+  for (let scriptId of data.scriptsSelected) {
+    const queryValues = `(${script_order},${scriptId},${data.groupSelected},'${new Date().toISOString()}','${new Date().toISOString()}')`
+    query += ' ' + queryValues
+    if (data.scriptsSelected.indexOf(scriptId) + 1 !== data.scriptsSelected.length) {
+      query += ','
+    }
+    script_order++
+  }
+  query += ';'
+  let result = await sequelize.query(query)
   console.log(result)
 }
 /**
