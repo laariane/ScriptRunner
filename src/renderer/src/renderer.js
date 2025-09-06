@@ -18,10 +18,10 @@ const state = {
   processId: null,
   running: false
 }
-// when we run the script change the button to to stop
 /**
  * script consts
  */
+let GROUP_SCRIPTS = null
 const convert = new Convert()
 const fileOpener = document.getElementById('file-opener')
 const fileOpenerButton = document.getElementById('file-opener-button')
@@ -39,6 +39,7 @@ const dialogGroupScriptRadioButton = document.getElementById('group-radio')
 const dialogForm = document.getElementById('dialog-form')
 const dialogFromSubmitButton = document.getElementById('dialog-submit-button')
 const dialogLocalFileOpenerButton = document.getElementById('dialog-local-file-opener')
+const dialogGroupScriptListContainer = document.getElementById('dialog-group-script-list-container')
 const scriptItemsButtons = [
   {
     img: playButtonSvg,
@@ -78,19 +79,34 @@ ListAllScriptsButton.addEventListener('click', () => {
   displayScriptList(null, scriptList)
 })
 dialogAllScriptsRadioButton.addEventListener('click', () => {
-  dialogScriptList.replaceChildren()
-  dialogFromSubmitButton.style.display = 'none'
+  // dialogScriptList.replaceChildren()
+  dialogGroupScriptListContainer.style.display = 'none'
   dialogLocalFileOpenerButton.style.display = 'block'
-
 })
 dialogGroupScriptRadioButton.addEventListener('click', () => {
   displayScriptList(null, dialogScriptList)
-  dialogFromSubmitButton.style.display = 'block'
+  populateGroupScriptOptionsDialog()
+  dialogGroupScriptListContainer.style.display = 'block'
   dialogLocalFileOpenerButton.style.display = 'none'
 })
 dialogForm.addEventListener('submit', (e) => {
   e.preventDefault()
-  // console.log(e.currentTarget.elements[0].value)
+  console.log(e.currentTarget.elements[0].value)
+  let groupSelected = document.getElementById('dialog-group-script-select')
+  let scriptsSelected = []
+  for (const element of e.currentTarget.elements) {
+    if (element.checked) {
+      console.log(
+        `Selected group: ${groupSelected.value} and we are going to add the script ${element.value}`
+      )
+      scriptsSelected.push(element.value)
+    }
+  }
+  let data = {
+    groupSelected: groupSelected.value,
+    scriptsSelected
+  }
+  window.scriptFunctionalities.addScriptsToGroupScript(data)
   dialogTriggerToAddFiles.close()
 })
 /**
@@ -190,6 +206,7 @@ async function displayScriptList(groupScripts, nodeToFill) {
 }
 async function displayGroupScriptList() {
   const { data, success } = await window.scriptFunctionalities.getAllGroupScripts()
+  GROUP_SCRIPTS = data
   const groupScripts = data
   if (groupScripts && success) {
     groupScriptList.replaceChildren()
@@ -309,7 +326,20 @@ function openFileExplorer() {
   // fileOpener.click()
 }
 
+function populateGroupScriptOptionsDialog() {
+  const dialogGroupScriptsOptions = document.getElementById('dialog-group-script-select')
+  dialogGroupScriptsOptions.replaceChildren()
+  for (const groupScript of GROUP_SCRIPTS) {
+    let optionItem = document.createElement('option')
+    optionItem.textContent = groupScript.dataValues.name
+    optionItem.value = groupScript.dataValues.id
+    dialogGroupScriptsOptions.appendChild(optionItem)
+  }
+}
+
 function init() {
   displayScriptList(null, scriptList)
   displayGroupScriptList()
+    .then()
+    .catch((error) => console.log(error))
 }

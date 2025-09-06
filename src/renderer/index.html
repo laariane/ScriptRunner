@@ -43,6 +43,7 @@
   <div id="terminal" class="terminal-container"></div>
 </div>
 <dialog id="dialog-to-add-files" closedby="any">
+  <div class="dialog-content">
   <p>Add Scripts to :</p>
   <div class="dialog-radio-buttons">
     <div>
@@ -61,13 +62,17 @@
       <label for="group-radio">A Group Script</label>
     </div>
   </div>
-  <div class="script-list-container">
+  <div id="dialog-group-script-list-container" class="script-list-container">
+    <label for="dialog-group-script-select">Choose Which Group Script To Add To </label>
+    <select name="" id="dialog-group-script-select">
+    </select>
     <form id="dialog-form">
       <ul id="dialog-script-list"></ul>
-    </form>
     <button type="submit" id="dialog-submit-button" form="dialog-form"> confirm</button>
+    </form>
   </div>
     <button id="dialog-local-file-opener">choose from local files</button>
+  </div>
 </dialog>
 </body>
 <script type="module" src="./src/renderer.js"></script>

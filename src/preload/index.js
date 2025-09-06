@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('scriptFunctionalities', {
   },
   deleteGroupScript: async (groupScriptId) => {
     return await ipcRenderer.invoke('deleteGroupScript', groupScriptId)
+  },
+  addScriptsToGroupScript: async (data) => {
+    return await ipcRenderer.invoke('addScriptsToGroupScript', data)
   }
 })
 

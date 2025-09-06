@@ -177,9 +177,13 @@ dialog {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   margin: auto;
   min-width: 70%;
+
+}
+
+.dialog-content {
+  height: 100%;
   display: flex;
   flex-direction: column;
-
 }
 
 .dialog-radio-buttons {
@@ -201,16 +205,25 @@ dialog {
   margin-left: auto;
 }
 
-#dialog-submit-button{
-  width:30%;
-  margin-right: auto;
-  margin-left: auto;
-}
 #dialog-submit-button {
-  display: none;
-}
-#dialog-local-file-opener{
   width: 30%;
   margin-right: auto;
   margin-left: auto;
+}
+
+#dialog-local-file-opener {
+  width: 30%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#dialog-group-script-list-container {
+  display: none;
+  flex-direction: column;
+}
+
+#dialog-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
 }
