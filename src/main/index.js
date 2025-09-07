@@ -183,12 +183,13 @@ async function deleteGroupScript(event, groupScriptId) {
   }
 }
 async function createGroupScript(event, name) {
+  let result
   if (name) {
-    const result = await ScriptGroup.create({
+    result = await ScriptGroup.create({
       name: name
     })
-    return result
   }
+  return sendToRender(true, result)
 }
 async function getGroupScriptElements(event, scriptGroupId) {
   if (scriptGroupId) {
