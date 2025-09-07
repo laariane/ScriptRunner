@@ -55,7 +55,7 @@ async function deleteScript(scriptId) {
 }
 
 async function createGroupScript(groupScriptName) {
-  await ipcRenderer.invoke('createGroupScript', groupScriptName)
+  return await ipcRenderer.invoke('createGroupScript', groupScriptName)
 }
 async function getAllGroupScripts() {
   return ipcRenderer.invoke('getAllGroupScripts')

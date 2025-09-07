@@ -24,7 +24,7 @@ const state = {
 let GROUP_SCRIPTS = null
 const convert = new Convert()
 const fileOpener = document.getElementById('file-opener')
-const fileOpenerButton = document.getElementById('file-opener-button')
+const modalOpenerButton = document.getElementById('modal-opener-button')
 const scriptList = document.getElementById('script-list')
 const groupScriptList = document.getElementById('group-script-list')
 const terminal = document.getElementById('terminal')
@@ -61,14 +61,20 @@ const groupScriptbuttons = [
   },
   {
     img: chevronRightSvg,
-    handler: displayGroupScripts
+    handler: (event) => {
+      const groupScriptId = event.currentTarget.parentNode.groupScriptId
+      const groupScriptName = event.currentTarget.parentNode.innerText
+      displayGroupScriptsElements(event, groupScriptId, groupScriptName)
+        .then((r) => console.log(r))
+        .catch((error) => console.log(error))
+    }
   }
 ]
 /***
  * event listeners
  */
 fileOpener.addEventListener('change', addScripts)
-fileOpenerButton.addEventListener('click', openFileExplorer)
+modalOpenerButton.addEventListener('click', openScriptSelectionModal)
 groupScriptCreationButton.addEventListener('click', createGroupScript)
 groupScriptNameInput.addEventListener('keyup', groupScriptNameInputHandler)
 groupScriptNameInput.addEventListener('blur', () => {
@@ -85,14 +91,14 @@ dialogAllScriptsRadioButton.addEventListener('click', () => {
 })
 dialogGroupScriptRadioButton.addEventListener('click', () => {
   displayScriptList(null, dialogScriptList)
-  populateGroupScriptOptionsDialog()
   dialogGroupScriptListContainer.style.display = 'block'
   dialogLocalFileOpenerButton.style.display = 'none'
 })
-dialogForm.addEventListener('submit', (e) => {
+dialogForm.addEventListener('submit', async (e) => {
   e.preventDefault()
   console.log(e.currentTarget.elements[0].value)
   let groupSelected = document.getElementById('dialog-group-script-select')
+  let groupName = document.querySelector(`option[value='${groupSelected.value}']`)
   let scriptsSelected = []
   for (const element of e.currentTarget.elements) {
     if (element.checked) {
@@ -107,6 +113,7 @@ dialogForm.addEventListener('submit', (e) => {
     scriptsSelected
   }
   window.scriptFunctionalities.addScriptsToGroupScript(data)
+  await displayGroupScriptsElements(e, groupSelected.value, groupName.innerHTML)
   dialogTriggerToAddFiles.close()
 })
 /**
@@ -153,14 +160,11 @@ async function deleteScript(event) {
 async function deleteGroupScript(event) {
   const groupScriptId = event.currentTarget.parentNode.groupScriptId
   console.log(groupScriptId)
-  window.scriptFunctionalities.deleteGroupScript(groupScriptId)
-  displayGroupScriptList()
+  await window.scriptFunctionalities.deleteGroupScript(groupScriptId)
+  await displayGroupScriptList()
 }
-async function displayGroupScripts(event) {
-  const groupScriptId = event.currentTarget.parentNode.groupScriptId
-  const groupScriptName = event.currentTarget.parentNode.innerText
+async function displayGroupScriptsElements(event, groupScriptId, groupScriptName) {
   headerTitle.innerText = `${groupScriptName.toUpperCase()}`
-  console.log(groupScriptName)
   const { data, success } = await window.scriptFunctionalities.getGroupScriptElements(groupScriptId)
   console.log(data)
   if (success) {
@@ -223,9 +227,10 @@ async function createGroupScript() {
 async function groupScriptNameInputHandler(event) {
   if (event.key === 'Enter') {
     const groupScriptName = event.target.value
-    await window.scriptFunctionalities.createGroupScript(groupScriptName)
+    const { data, success } = await window.scriptFunctionalities.createGroupScript(groupScriptName)
     groupScriptNameInput.style.display = 'none'
-    displayGroupScriptList()
+    displayGroupScriptList().then()
+    await displayGroupScriptsElements(event, data.dataValues.id, data.dataValues.name)
   }
 }
 
@@ -321,8 +326,9 @@ function changeStopButtonIntoPlayButton(currentNode) {
 }
 /**
  */
-function openFileExplorer() {
+function openScriptSelectionModal() {
   dialogTriggerToAddFiles.showModal()
+  populateGroupScriptOptionsDialog()
   // fileOpener.click()
 }
 
